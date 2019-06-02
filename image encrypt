@@ -1,0 +1,51 @@
+function image=qlm(image,key)
+%sprintf('1111111')
+x(1)=key(1);
+y(1)=key(2);
+z(1)=key(3);
+r=key(4);
+b=key(5);
+image_1=image(:,:,1);%R维
+image_1(:)
+image_2=image(:,:,2);%G维
+image_3=image(:,:,3);%B维
+%迭代1000次减轻暂态效应
+%sprintf('11111')
+for i=1:1000
+    x(i+1)=r*(x(i)-(abs(x(i)))^2)-r*y(i);
+    y(i+1)=-y(i)*exp(-2*b)+exp(-b)*r*((2-2*x(i))*y(i)-2*x(i)*z(i));
+    z(i+1)=-z(i)*exp(-2*b)+exp(-b)*r*(2*(1-x(i))*z(i)-2*x(i)*y(i)-x(i));
+end
+%把迭代1000次后的值作为初值
+x(1)=x(1001);
+y(1)=y(1001);
+z(1)=z(1001);
+%对生成的数进行归一化操作得到0-1间的小数,n表示normalize
+xn(1)=x(1)*1000-floor(x(1)*1000);
+yn(1)=y(1)*1000-floor(y(1)*1000);
+zn(1)=z(1)*1000-floor(z(1)*1000);
+s=size(image);%s(1)是行，s(2)是列，s(3)是维数
+for i=1:s(1)*s(2)
+    x(i+1)=r*(x(i)-(abs(x(i)))^2)-r*y(i);
+    y(i+1)=-y(i)*exp(-2*b)+exp(-b)*r*((2-2*x(i))*y(i)-2*x(i)*z(i));
+    z(i+1)=-z(i)*exp(-2*b)+exp(-b)*r*(2*(1-x(i))*z(i)-2*x(i)*y(i)-x(i));
+    xn(i+1)=x(i+1)*1000-floor(x(i+1)*1000);
+    yn(i+1)=y(i+1)*1000-floor(y(i+1)*1000);
+    zn(i+1)=z(i+1)*1000-floor(z(i+1)*1000);
+end
+%将归一化后的数变成整数
+xnr(:)=floor(xn(:)*(2^32-1));
+ynr(:)=floor(yn(:)*(2^32-1));
+znr(:)=floor(zn(:)*(2^32-1));
+sprintf('111');
+for i=1:s(1)*s(2)
+    %sprintf('xnr(%d):%d,ynr(%d):%d,znr(%d):%d',i,xnr(i),i,ynr(i),i,znr(i))
+    image_1(i)=mod(double(image_1(i))+xnr(i),256);
+    %sprintf('xnr(%d):%d,image_1(%d):%d',i,xnr(i),i,image_1(i))
+    image_2(i)=mod(double(image_2(i))+ynr(i),256);
+    image_3(i)=mod(double(image_3(i))+znr(i),256);
+end
+image(:,:,1)=image_1;
+image(:,:,2)=image_2;
+image(:,:,3)=image_3;
+end
