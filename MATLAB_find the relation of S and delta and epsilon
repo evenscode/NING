@@ -1,0 +1,29 @@
+list=[];
+list_log=[];
+for epsilon=0:0.02:1
+    for delta=0:0.002:1
+        express=1-(2+sqrt(6*delta^2*(3+sqrt(1-epsilon^2))^2+12*delta^2*(3+sqrt(1-epsilon^2))-12*delta*(3+sqrt(1-epsilon^2))+4))/(3*delta*(3+sqrt(1-epsilon^2)));
+        if isreal(express) && express>=0
+            list=[list;epsilon,delta,express];
+            list_log=[list_log;epsilon,delta,-log2(express)];
+        end
+    end
+end
+%subplot(1,2,1)
+%plot3(list(:,1),list(:,2),list(:,3));
+%xlabel('epsilon');
+%ylabel('delta');
+%zlabel('express');
+%subplot(1,2,2)
+%plot3(list_log(:,1),list_log(:,2),list_log(:,3));
+%xlabel('epsilon');
+%ylabel('delta');
+%zlabel('s');
+subplot(121)
+plot(list_log(:,1),list_log(:,3));
+xlabel('epsilon')
+ylabel('S')
+subplot(122)
+plot(list_log(:,2),list_log(:,3));
+xlabel('delta')
+ylabel('S')
