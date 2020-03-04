@@ -1,0 +1,83 @@
+1. equals()和hashcode()的用法
+    a. equals()和hashcode()都是Object类中的方法
+    b. equals()
+        1) 在未重写时，和==等效
+          【源码】
+            public boolean equals(Object obj) {
+                return (this == obj);
+            }
+        2) 可根据实际需求对equals进行重写
+    c. native int hashcode()
+          返回一个对象的hashcode值，用于更好地支持hash表的操作，例如hashmap等。
+          【源码注释】
+              如果两个对象用equals判断是相等的，那么调用这两个对象的hashCode方法也应该返回相同的int结果。
+              虽然对于用equals判断不相等的两个对象，不要求一定生成不同的int结果，但是这种情况生成不同的结果可以提高hash表的性能。
+2. 重写equals()和hashcode()
+    a. 重写equals方法
+        1) equals()的方法头为： public boolean equals(Object obj)。
+           注意传入的参数是Object类型的，所以不能在重写的时候直接和某一个具体类型的属性值进行比较，需要首先判断传入的参数的类型是否和当前类一致。
+           判断obj是否属于某一个类（假设User类）的实例，有两种方法：
+                第一种： obj instanceof User
+                第二种： obj.getClass()==this.getClass()
+           那么什么时候用instanceof关键字，什么时候用getClass()方法呢？
+                instanceof是判断左边这个对象是否是右边类的实例，或者是否是右边类的子类的实例；
+                getClass()方法是获取一个类的全限定类名，通过它可以严格判断两个对象是否是同一个类的实例。
+                可根据实际场景分析使用instanceof还是getClass()。
+           【例】String类型就对equals进行了重写
+            public boolean equals(Object anObject) {
+                if (this == anObject) {
+                    return true;
+                }
+                if (anObject instanceof String) {
+                    String anotherString = (String)anObject;
+                    int n = value.length;
+                    if (n == anotherString.value.length) {
+                        char v1[] = value;
+                        char v2[] = anotherString.value;
+                        int i = 0;
+                        while (n-- != 0) {
+                            if (v1[i] != v2[i])
+                            return false;
+                            i++;
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            也就是逐字符去判断是否相等。
+    b. 重写hashcode()方法
+        “先整理出你判断对象相等的属性，然后取一个尽可能小的正整数(尽可能小时怕最终得到的结果超出了整型int的取数范围)，
+        这里我取了17，（好像在JDK源码中哪里看过用的是17），然后计算17*属性的hashcode+其他属性的hashcode，重复步骤。”
+        参考：https://blog.csdn.net/u012557538/article/details/89861552
+        【例】String也对hashcode()进行了重写
+            计算字符串的hashcode公式为：s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]
+            代码：
+                //private final char value[];
+                public int hashCode() {
+                    int h = hash;
+                    if (h == 0 && value.length > 0) {
+                        char val[] = value;
+
+                        for (int i = 0; i < value.length; i++) {
+                           h = 31 * h + val[i];
+                        }
+                        hash = h;
+                    }
+                    return h;
+                }
+    c. 重写equals方法就必须重写hashcode方法吗？
+        一般要求equals方法判断结果相等的时候，hashcode的结果也相等。
+        不然只重写equals得到两个对象相等了，又算hashcode结果不相等，岂不是乱套了？
+        尤其是当用在hashmap中的时候，首先用hashcode，再用equals，如果用hashcode都已经判断不相等了，那岂不是永远找不到那个相等的对象了。     
+3. Java数据类型
+    a. 基本数据类型
+        byte、int、short、long、float、double、char、boolean
+        对于基本数据类型来说，==就是判断它们的值是否相等。
+        不能调用属性和方法，也就是char和int这些没有hashcode。
+        基本数据类型的变量名及值放在栈中。
+    b. 引用数据类型
+        也就是通常所说的类，==是判断它们的引用地址是否相等，可根据实际情况来重写equals方法。
+        引用数据类型的变量放在栈中，变量所指向的对象放在堆中。
+        
+           
